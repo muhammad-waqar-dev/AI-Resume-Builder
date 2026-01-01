@@ -1,4 +1,4 @@
-# React Resume Builder
+# React AI Resume Builder
 
 A modern, feature-rich React application for building professional resumes with CRUD functionality and PDF export capabilities.
 
