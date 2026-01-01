@@ -96,7 +96,7 @@ function WorkExperienceForm({ data, updateData }) {
                   type="text"
                   value={item.location || ''}
                   onChange={(e) => handleUpdate(item.id, 'location', e.target.value)}
-                  placeholder="Bengaluru"
+                  placeholder="Karachi, Sindh, Pakistan"
                 />
               </div>
 

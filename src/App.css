@@ -12,6 +12,31 @@
   align-items: center;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-ai-resume {
+  padding: 0.6rem 1.5rem;
+  border: 2px solid #10b981;
+  background-color: #fff;
+  color: #10b981;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-ai-resume:hover {
+  background-color: #ecfdf5;
+  border-color: #059669;
+  color: #059669;
+}
+
 .app-header h1 {
   color: #333;
   font-size: 1.8rem;
@@ -54,6 +79,24 @@
   .app-header {
     flex-direction: column;
     gap: 1rem;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .btn-ai-resume {
+    width: 100%;
+  }
+
+  .tab-buttons {
+    width: 100%;
+  }
+
+  .tab-buttons button {
+    flex: 1;
   }
   
   .app-content {
