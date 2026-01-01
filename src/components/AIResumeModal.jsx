@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react'
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import './AIResumeModal.css'
 
-function AIResumeModal({ isOpen, onClose, onResumeParsed }) {
+function AIResumeModal({ isOpen, onClose, onResumeParsed, setResumeData, setActiveTab, setIsModalOpen}) {
   const [file, setFile] = useState(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState('')
@@ -144,7 +144,7 @@ function AIResumeModal({ isOpen, onClose, onResumeParsed }) {
       console.log('Parsed Resume Data:', parsedResume)
 
       // Call the callback with parsed data
-      onResumeParsed(parsedResume)
+      onResumeParsed({parsedData: parsedResume, setResumeData, setActiveTab, setIsModalOpen})
       
       // Close modal and reset
       handleClose()
