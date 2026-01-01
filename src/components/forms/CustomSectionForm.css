@@ -1,0 +1,21 @@
+.custom-section-form .details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.custom-section-form .detail-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.custom-section-form .detail-item input {
+  flex: 1;
+}
+
+.custom-section-form .btn-sm {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+

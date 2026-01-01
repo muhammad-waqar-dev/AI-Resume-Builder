@@ -7,51 +7,63 @@ import SkillsForm from './forms/SkillsForm'
 import CertificationsForm from './forms/CertificationsForm'
 import SoftSkillsForm from './forms/SoftSkillsForm'
 import LanguagesForm from './forms/LanguagesForm'
+import CustomSectionForm from './forms/CustomSectionForm'
 import './ResumeForm.css'
 
-function ResumeForm({ resumeData, updateResumeData }) {
+// Section component mapping
+const sectionComponents = {
+  personalInfo: PersonalInfoForm,
+  workExperience: WorkExperienceForm,
+  projects: ProjectsForm,
+  education: EducationForm,
+  skills: SkillsForm,
+  certifications: CertificationsForm,
+  softSkills: SoftSkillsForm,
+  languages: LanguagesForm
+}
+
+function ResumeForm({ resumeData, updateResumeData, sectionOrder = [], enabledSections = {}, customSections = {} }) {
+  // Always render PersonalInfo first (required section)
+  const renderSection = (sectionKey) => {
+    // Check if it's a custom section
+    const customSection = customSections[sectionKey]
+    if (customSection) {
+      return (
+        <CustomSectionForm
+          key={sectionKey}
+          data={resumeData[sectionKey] || []}
+          updateData={(data) => updateResumeData(sectionKey, data)}
+          sectionLabel={customSection.label}
+        />
+      )
+    }
+    
+    // Render standard section
+    const Component = sectionComponents[sectionKey]
+    if (!Component) return null
+
+    return (
+      <Component
+        key={sectionKey}
+        data={resumeData[sectionKey]}
+        updateData={(data) => updateResumeData(sectionKey, data)}
+      />
+    )
+  }
+
   return (
     <div className="resume-form">
       <div className="form-container">
-        <PersonalInfoForm 
-          data={resumeData.personalInfo}
-          updateData={(data) => updateResumeData('personalInfo', data)}
-        />
+        {/* Personal Info is always first and required */}
+        {renderSection('personalInfo')}
         
-        <WorkExperienceForm 
-          data={resumeData.workExperience}
-          updateData={(data) => updateResumeData('workExperience', data)}
-        />
-        
-        <ProjectsForm 
-          data={resumeData.projects}
-          updateData={(data) => updateResumeData('projects', data)}
-        />
-        
-        <EducationForm 
-          data={resumeData.education}
-          updateData={(data) => updateResumeData('education', data)}
-        />
-        
-        <SkillsForm 
-          data={resumeData.skills}
-          updateData={(data) => updateResumeData('skills', data)}
-        />
-        
-        <CertificationsForm 
-          data={resumeData.certifications}
-          updateData={(data) => updateResumeData('certifications', data)}
-        />
-        
-        <SoftSkillsForm 
-          data={resumeData.softSkills}
-          updateData={(data) => updateResumeData('softSkills', data)}
-        />
-        
-        <LanguagesForm 
-          data={resumeData.languages}
-          updateData={(data) => updateResumeData('languages', data)}
-        />
+        {/* Render other sections based on order and enabled state */}
+        {sectionOrder.map(sectionKey => {
+          if (enabledSections[sectionKey] && sectionKey !== 'personalInfo') {
+            return renderSection(sectionKey)
+          }
+          return null
+        })}
       </div>
     </div>
   )

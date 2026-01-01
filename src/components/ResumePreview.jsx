@@ -3,8 +3,214 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import './ResumePreview.css'
 
-function ResumePreview({ resumeData }) {
+function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, customSections = {} }) {
   const resumeRef = useRef()
+
+  // Render Work Experience section
+  const renderWorkExperience = () => {
+    if (!resumeData.workExperience || resumeData.workExperience.length === 0) return null
+    
+    return (
+      <div className="resume-section">
+        <h3 className="section-title">Work Experience</h3>
+        {resumeData.workExperience.map((exp, index) => (
+          <div key={index} className="experience-item">
+            <div className="experience-header">
+              <div className="experience-title">
+                <strong>{exp.role}</strong>
+                {exp.company && <span> • {exp.company}</span>}
+              </div>
+              <div className="experience-meta">
+                {exp.startDate && <span>{exp.startDate}</span>}
+                {exp.endDate && <span> - {exp.endDate}</span>}
+                {exp.location && <span> • {exp.location}</span>}
+              </div>
+            </div>
+            {exp.description && (
+              <p className="experience-description">{exp.description}</p>
+            )}
+            {exp.achievements && exp.achievements.length > 0 && (
+              <div className="achievements-list">
+                <strong>Key Achievements:</strong>
+                <ul>
+                  {exp.achievements.map((achievement, idx) => (
+                    achievement && <li key={idx}>{achievement}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  // Render Projects section
+  const renderProjects = () => {
+    if (!resumeData.projects || resumeData.projects.length === 0) return null
+    
+    return (
+      <div className="resume-section">
+        <h3 className="section-title">Projects</h3>
+        {resumeData.projects.map((project, index) => (
+          <div key={index} className="project-item">
+            <div className="project-header">
+              <strong>{project.name}</strong>
+              {project.year && <span> • {project.year}</span>}
+            </div>
+            {project.description && (
+              <p className="project-description">{project.description}</p>
+            )}
+            {project.details && project.details.length > 0 && (
+              <ul className="project-details">
+                {project.details.map((detail, idx) => (
+                  detail && <li key={idx}>{detail}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  // Render Education section
+  const renderEducation = () => {
+    if (!resumeData.education || resumeData.education.length === 0) return null
+    
+    return (
+      <div className="resume-section">
+        <h3 className="section-title">Education</h3>
+        {resumeData.education.map((edu, index) => (
+          <div key={index} className="education-item">
+            {edu.startDate && edu.endDate && (
+              <span className="education-dates">{edu.startDate} - {edu.endDate}</span>
+            )}
+            <div className="education-details">
+              {edu.institution && <strong>{edu.institution}</strong>}
+              {edu.degree && <span> • {edu.degree}</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  // Render Skills section
+  const renderSkills = () => {
+    if (!resumeData.skills || resumeData.skills.length === 0) return null
+    
+    return (
+      <div className="resume-section">
+        <h3 className="section-title">Skills</h3>
+        <div className="skills-list">
+          {resumeData.skills.map((skill, index) => (
+            <span key={index} className="skill-tag">{skill}</span>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Render Certifications section
+  const renderCertifications = () => {
+    if (!resumeData.certifications || resumeData.certifications.length === 0) return null
+    
+    return (
+      <div className="resume-section">
+        <h3 className="section-title">Certifications</h3>
+        <ul className="certifications-list">
+          {resumeData.certifications.map((cert, index) => (
+            <li key={index}>{cert}</li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+
+  // Render Soft Skills section
+  const renderSoftSkills = () => {
+    if (!resumeData.softSkills || resumeData.softSkills.length === 0) return null
+    
+    return (
+      <div className="resume-section">
+        <h3 className="section-title">Soft Skills</h3>
+        <div className="skills-list">
+          {resumeData.softSkills.map((skill, index) => (
+            <span key={index} className="skill-tag">{skill}</span>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Render Languages section
+  const renderLanguages = () => {
+    if (!resumeData.languages || resumeData.languages.length === 0) return null
+    
+    return (
+      <div className="resume-section">
+        <h3 className="section-title">Languages</h3>
+        <div className="skills-list">
+          {resumeData.languages.map((language, index) => (
+            <span key={index} className="skill-tag">{language}</span>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Render Custom Section
+  const renderCustomSection = (sectionKey) => {
+    const customSection = customSections[sectionKey]
+    if (!customSection || !resumeData[sectionKey] || resumeData[sectionKey].length === 0) {
+      return null
+    }
+
+    return (
+      <div className="resume-section">
+        <h3 className="section-title">{customSection.label}</h3>
+        {resumeData[sectionKey].map((item, index) => (
+          <div key={item.id || index} className="experience-item">
+            <div className="experience-header">
+              <div className="experience-title">
+                {item.title && <strong>{item.title}</strong>}
+                {item.subtitle && <span> • {item.subtitle}</span>}
+              </div>
+              {(item.startDate || item.endDate || item.location) && (
+                <div className="experience-meta">
+                  {item.startDate && <span>{item.startDate}</span>}
+                  {item.endDate && <span> - {item.endDate}</span>}
+                  {item.location && <span> • {item.location}</span>}
+                </div>
+              )}
+            </div>
+            {item.description && (
+              <p className="experience-description">{item.description}</p>
+            )}
+            {item.details && item.details.length > 0 && (
+              <ul className="project-details">
+                {item.details.map((detail, idx) => (
+                  detail && <li key={idx}>{detail}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  // Section renderer mapping
+  const sectionRenderers = {
+    workExperience: renderWorkExperience,
+    projects: renderProjects,
+    education: renderEducation,
+    skills: renderSkills,
+    certifications: renderCertifications,
+    softSkills: renderSoftSkills,
+    languages: renderLanguages
+  }
 
   const handleDownloadPDF = async () => {
     const element = resumeRef.current
@@ -111,131 +317,22 @@ function ResumePreview({ resumeData }) {
             </div>
           </div>
 
-          {/* Work Experience Section */}
-          {resumeData.workExperience && resumeData.workExperience.length > 0 && (
-            <div className="resume-section">
-              <h3 className="section-title">Work Experience</h3>
-              {resumeData.workExperience.map((exp, index) => (
-                <div key={index} className="experience-item">
-                  <div className="experience-header">
-                    <div className="experience-title">
-                      <strong>{exp.role}</strong>
-                      {exp.company && <span> • {exp.company}</span>}
-                    </div>
-                    <div className="experience-meta">
-                      {exp.startDate && <span>{exp.startDate}</span>}
-                      {exp.endDate && <span> - {exp.endDate}</span>}
-                      {exp.location && <span> • {exp.location}</span>}
-                    </div>
-                  </div>
-                  {exp.description && (
-                    <p className="experience-description">{exp.description}</p>
-                  )}
-                  {exp.achievements && exp.achievements.length > 0 && (
-                    <div className="achievements-list">
-                      <strong>Key Achievements:</strong>
-                      <ul>
-                        {exp.achievements.map((achievement, idx) => (
-                          achievement && <li key={idx}>{achievement}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Projects Section */}
-          {resumeData.projects && resumeData.projects.length > 0 && (
-            <div className="resume-section">
-              <h3 className="section-title">Projects</h3>
-              {resumeData.projects.map((project, index) => (
-                <div key={index} className="project-item">
-                  <div className="project-header">
-                    <strong>{project.name}</strong>
-                    {project.year && <span> • {project.year}</span>}
-                  </div>
-                  {project.description && (
-                    <p className="project-description">{project.description}</p>
-                  )}
-                  {project.details && project.details.length > 0 && (
-                    <ul className="project-details">
-                      {project.details.map((detail, idx) => (
-                        detail && <li key={idx}>{detail}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Education Section */}
-          {resumeData.education && resumeData.education.length > 0 && (
-            <div className="resume-section">
-              <h3 className="section-title">Education</h3>
-              {resumeData.education.map((edu, index) => (
-                <div key={index} className="education-item">
-                  {edu.startDate && edu.endDate && (
-                    <span className="education-dates">{edu.startDate} - {edu.endDate}</span>
-                  )}
-                  <div className="education-details">
-                    {edu.institution && <strong>{edu.institution}</strong>}
-                    {edu.degree && <span> • {edu.degree}</span>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Skills Section */}
-          {resumeData.skills && resumeData.skills.length > 0 && (
-            <div className="resume-section">
-              <h3 className="section-title">Skills</h3>
-              <div className="skills-list">
-                {resumeData.skills.map((skill, index) => (
-                  <span key={index} className="skill-tag">{skill}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Certifications Section */}
-          {resumeData.certifications && resumeData.certifications.length > 0 && (
-            <div className="resume-section">
-              <h3 className="section-title">Certifications</h3>
-              <ul className="certifications-list">
-                {resumeData.certifications.map((cert, index) => (
-                  <li key={index}>{cert}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Soft Skills Section */}
-          {resumeData.softSkills && resumeData.softSkills.length > 0 && (
-            <div className="resume-section">
-              <h3 className="section-title">Soft Skills</h3>
-              <div className="skills-list">
-                {resumeData.softSkills.map((skill, index) => (
-                  <span key={index} className="skill-tag">{skill}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Languages Section */}
-          {resumeData.languages && resumeData.languages.length > 0 && (
-            <div className="resume-section">
-              <h3 className="section-title">Languages</h3>
-              <div className="skills-list">
-                {resumeData.languages.map((language, index) => (
-                  <span key={index} className="skill-tag">{language}</span>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Dynamically render sections based on order and enabled state */}
+          {sectionOrder.map(sectionKey => {
+            if (!enabledSections[sectionKey]) return null
+            
+            // Check if it's a custom section
+            if (customSections[sectionKey]) {
+              return <React.Fragment key={sectionKey}>{renderCustomSection(sectionKey)}</React.Fragment>
+            }
+            
+            // Render standard section
+            if (sectionRenderers[sectionKey]) {
+              return <React.Fragment key={sectionKey}>{sectionRenderers[sectionKey]()}</React.Fragment>
+            }
+            
+            return null
+          })}
 
           <div className="resume-footer">
             <span>End of Page 1</span>
