@@ -125,14 +125,14 @@ function App() {
       <MainHeader />
 
       <div className="tab-header tab-header-split">
-        <div className="tab-left">
+        {/* <div className="tab-left">
           <button
             className="btn-ai-resume"
             onClick={() => setIsModalOpen(true)}
           >
             Custom AI Resume
           </button>
-        </div>
+        </div> */}
         <div className="tab-buttons">
           {selectedResume ? <>
             <button
