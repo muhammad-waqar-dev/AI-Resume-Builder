@@ -40,6 +40,11 @@ function PersonalInfoForm({ data, updateData }) {
     }
   }
 
+  const handleImageError = () => {
+    // If the image URL is broken (e.g., private/protected link), fall back to the upload prompt
+    handleChange('profileImage', '')
+  }
+
   return (
     <div className="form-section">
       <h2>Personal Information</h2>
@@ -50,7 +55,11 @@ function PersonalInfoForm({ data, updateData }) {
           {data.profileImage ? (
             <div className="image-preview-wrapper">
               <div className="image-preview">
-                <img src={data.profileImage} alt="Profile preview" />
+                <img
+                  src={data.profileImage}
+                  alt="Profile preview"
+                  onError={handleImageError}
+                />
               </div>
               <div className="image-actions">
                 <button
