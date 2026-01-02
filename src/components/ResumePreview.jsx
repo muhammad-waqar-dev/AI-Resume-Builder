@@ -3,15 +3,23 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import './ResumePreview.css'
 
-function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, customSections = {} }) {
+function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, customSections = {}, templateId = 'Resume1' }) {
   const resumeRef = useRef()
+
+  // Helper to check if a section should be rendered
+  const shouldRenderSection = (sectionKey) => {
+    return enabledSections[sectionKey] && (
+      (sectionRenderers[sectionKey] && resumeData[sectionKey] && resumeData[sectionKey].length > 0) ||
+      (customSections[sectionKey] && resumeData[sectionKey] && resumeData[sectionKey].length > 0)
+    )
+  }
 
   // Render Work Experience section
   const renderWorkExperience = () => {
     if (!resumeData.workExperience || resumeData.workExperience.length === 0) return null
     
     return (
-      <div className="resume-section">
+      <div className="resume-section" data-section="workExperience">
         <h3 className="section-title">Work Experience</h3>
         {resumeData.workExperience.map((exp, index) => (
           <div key={index} className="experience-item">
@@ -50,7 +58,7 @@ function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, cu
     if (!resumeData.projects || resumeData.projects.length === 0) return null
     
     return (
-      <div className="resume-section">
+      <div className="resume-section" data-section="projects">
         <h3 className="section-title">Projects</h3>
         {resumeData.projects.map((project, index) => (
           <div key={index} className="project-item">
@@ -79,7 +87,7 @@ function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, cu
     if (!resumeData.education || resumeData.education.length === 0) return null
     
     return (
-      <div className="resume-section">
+      <div className="resume-section" data-section="education">
         <h3 className="section-title">Education</h3>
         {resumeData.education.map((edu, index) => (
           <div key={index} className="education-item">
@@ -101,7 +109,7 @@ function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, cu
     if (!resumeData.skills || resumeData.skills.length === 0) return null
     
     return (
-      <div className="resume-section">
+      <div className="resume-section" data-section="skills">
         <h3 className="section-title">Skills</h3>
         <div className="skills-list">
           {resumeData.skills.map((skill, index) => (
@@ -117,7 +125,7 @@ function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, cu
     if (!resumeData.certifications || resumeData.certifications.length === 0) return null
     
     return (
-      <div className="resume-section">
+      <div className="resume-section" data-section="certifications">
         <h3 className="section-title">Certifications</h3>
         <ul className="certifications-list">
           {resumeData.certifications.map((cert, index) => (
@@ -133,7 +141,7 @@ function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, cu
     if (!resumeData.softSkills || resumeData.softSkills.length === 0) return null
     
     return (
-      <div className="resume-section">
+      <div className="resume-section" data-section="softSkills">
         <h3 className="section-title">Soft Skills</h3>
         <div className="skills-list">
           {resumeData.softSkills.map((skill, index) => (
@@ -149,7 +157,7 @@ function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, cu
     if (!resumeData.languages || resumeData.languages.length === 0) return null
     
     return (
-      <div className="resume-section">
+      <div className="resume-section" data-section="languages">
         <h3 className="section-title">Languages</h3>
         <div className="skills-list">
           {resumeData.languages.map((language, index) => (
@@ -168,7 +176,7 @@ function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, cu
     }
 
     return (
-      <div className="resume-section">
+      <div className="resume-section" data-section={sectionKey}>
         <h3 className="section-title">{customSection.label}</h3>
         {resumeData[sectionKey].map((item, index) => (
           <div key={item.id || index} className="experience-item">
@@ -253,11 +261,11 @@ function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, cu
       </div>
       
       <div className="resume-preview" ref={resumeRef}>
-        <div className="resume-page">
-          {/* Header Section */}
-          <div className="resume-header">
-            <div className="header-content">
-              <div className="header-left">
+        <div className={`resume-page template-${templateId}`}>
+          <div className="resume-content-wrapper">
+            {/* Header Section */}
+            <header className="resume-header">
+              <div className="header-main">
                 <div className="profile-image">
                   {resumeData.personalInfo.profileImage ? (
                     <img src={resumeData.personalInfo.profileImage} alt="Profile" />
@@ -275,67 +283,69 @@ function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, cu
                   )}
                 </div>
               </div>
-            </div>
-            
-            <div className="contact-info">
-              {resumeData.personalInfo.phone && (
-                <div className="contact-item">
-                  <span className="contact-label">Phone:</span>
-                  <span>{resumeData.personalInfo.phone}</span>
-                </div>
-              )}
-              {resumeData.personalInfo.email && (
-                <div className="contact-item">
-                  <span className="contact-label">Email:</span>
-                  <span>{resumeData.personalInfo.email}</span>
-                </div>
-              )}
-              {resumeData.personalInfo.location && (
-                <div className="contact-item">
-                  <span className="contact-label">Location:</span>
-                  <span>{resumeData.personalInfo.location}</span>
-                </div>
-              )}
-              {resumeData.personalInfo.github && (
-                <div className="contact-item">
-                  <span className="contact-label">GitHub:</span>
-                  <span>{resumeData.personalInfo.github}</span>
-                </div>
-              )}
-              {resumeData.personalInfo.linkedin && (
-                <div className="contact-item">
-                  <span className="contact-label">LinkedIn:</span>
-                  <span>{resumeData.personalInfo.linkedin}</span>
-                </div>
-              )}
-              {resumeData.personalInfo.portfolio && (
-                <div className="contact-item">
-                  <span className="contact-label">Portfolio:</span>
-                  <span>{resumeData.personalInfo.portfolio}</span>
-                </div>
-              )}
+              
+              <div className="contact-info">
+                {resumeData.personalInfo.phone && (
+                  <div className="contact-item">
+                    <span className="contact-label">Phone:</span>
+                    <span>{resumeData.personalInfo.phone}</span>
+                  </div>
+                )}
+                {resumeData.personalInfo.email && (
+                  <div className="contact-item">
+                    <span className="contact-label">Email:</span>
+                    <span>{resumeData.personalInfo.email}</span>
+                  </div>
+                )}
+                {resumeData.personalInfo.location && (
+                  <div className="contact-item">
+                    <span className="contact-label">Location:</span>
+                    <span>{resumeData.personalInfo.location}</span>
+                  </div>
+                )}
+                {resumeData.personalInfo.github && (
+                  <div className="contact-item">
+                    <span className="contact-label">GitHub:</span>
+                    <span>{resumeData.personalInfo.github}</span>
+                  </div>
+                )}
+                {resumeData.personalInfo.linkedin && (
+                  <div className="contact-item">
+                    <span className="contact-label">LinkedIn:</span>
+                    <span>{resumeData.personalInfo.linkedin}</span>
+                  </div>
+                )}
+                {resumeData.personalInfo.portfolio && (
+                  <div className="contact-item">
+                    <span className="contact-label">Portfolio:</span>
+                    <span>{resumeData.personalInfo.portfolio}</span>
+                  </div>
+                )}
+              </div>
+            </header>
+
+            <div className="resume-sections">
+              {/* Dynamically render sections based on order and enabled state */}
+              {sectionOrder.map(sectionKey => {
+                if (!shouldRenderSection(sectionKey)) return null
+                
+                // Check if it's a custom section
+                if (customSections[sectionKey]) {
+                  return <React.Fragment key={sectionKey}>{renderCustomSection(sectionKey)}</React.Fragment>
+                }
+                
+                // Render standard section
+                if (sectionRenderers[sectionKey]) {
+                  return <React.Fragment key={sectionKey}>{sectionRenderers[sectionKey]()}</React.Fragment>
+                }
+                
+                return null
+              })}
             </div>
           </div>
 
-          {/* Dynamically render sections based on order and enabled state */}
-          {sectionOrder.map(sectionKey => {
-            if (!enabledSections[sectionKey]) return null
-            
-            // Check if it's a custom section
-            if (customSections[sectionKey]) {
-              return <React.Fragment key={sectionKey}>{renderCustomSection(sectionKey)}</React.Fragment>
-            }
-            
-            // Render standard section
-            if (sectionRenderers[sectionKey]) {
-              return <React.Fragment key={sectionKey}>{sectionRenderers[sectionKey]()}</React.Fragment>
-            }
-            
-            return null
-          })}
-
           <div className="resume-footer">
-            <span>End of Page 1</span>
+            <span>Generated by AI Resume Builder</span>
           </div>
         </div>
       </div>
@@ -344,4 +354,3 @@ function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, cu
 }
 
 export default ResumePreview
-

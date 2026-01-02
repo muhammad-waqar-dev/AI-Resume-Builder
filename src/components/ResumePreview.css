@@ -39,29 +39,34 @@
 .resume-page {
   width: 210mm;
   min-height: 297mm;
-  padding: 20mm;
+  padding: 15mm;
   background-color: #fff;
   color: #333;
-  font-family: 'Times New Roman', serif;
-  font-size: 11pt;
-  line-height: 1.6;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.5;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
-/* Header Section */
+.resume-content-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Base Styles */
 .resume-header {
   margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #333;
+  display: flex;
+  flex-direction: column;
 }
 
-.header-content {
-  margin-bottom: 1rem;
-}
-
-.header-left {
+.header-main {
   display: flex;
   gap: 1.5rem;
-  align-items: flex-start;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
 .profile-image {
@@ -69,11 +74,9 @@
   height: 80px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #e0e0e0;
+  background-color: #f0f0f0;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: 1px solid #ddd;
 }
 
 .profile-image img {
@@ -82,75 +85,234 @@
   object-fit: cover;
 }
 
-.profile-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
-  color: #fff;
-  font-size: 32pt;
-  font-weight: bold;
-}
-
 .header-info {
   flex: 1;
 }
 
 .resume-name {
-  font-size: 24pt;
-  font-weight: bold;
-  margin: 0 0 0.3rem 0;
-  color: #000;
+  font-size: 22pt;
+  font-weight: 800;
+  margin: 0;
+  color: #1a1a1a;
+  line-height: 1.1;
 }
 
 .resume-title {
-  font-size: 14pt;
-  font-weight: 600;
-  margin: 0 0 0.8rem 0;
-  color: #333;
+  font-size: 13pt;
+  font-weight: 500;
+  margin: 0.2rem 0 0.5rem 0;
+  color: #4a90e2;
 }
 
 .resume-summary {
-  font-size: 10pt;
-  line-height: 1.5;
-  margin: 0;
+  font-size: 9.5pt;
   color: #555;
+  margin: 0.5rem 0 0 0;
 }
 
 .contact-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.8rem;
+  font-size: 8.5pt;
+  color: #666;
+  padding-top: 0.5rem;
+  border-top: 1px solid #eee;
+}
+
+/* Template 1: Traditional - Left Align Header */
+.template-Resume1 .resume-header {
+  text-align: left;
+  align-items: flex-start;
+}
+.template-Resume1 .header-main {
+  flex-direction: row;
+  gap: 1.5rem;
+  align-items: center;
+}
+.template-Resume1 .contact-info {
+  justify-content: flex-start;
+}
+.template-Resume1 .section-title {
+  border-bottom: 2px solid #333;
+  padding-bottom: 2px;
+}
+
+/* Template 2: Modern - No Profile Image, Left Align with Padding */
+.template-Resume2 .profile-image {
+  display: none;
+}
+.template-Resume2 .resume-page {
+  padding-left: 25mm;
+}
+.template-Resume2 .resume-header {
+  text-align: left;
+  margin-bottom: 2rem;
+}
+.template-Resume2 .contact-info {
+  justify-content: flex-start;
+  border-top: none;
+  padding-top: 0;
+  color: #4a90e2;
+}
+.template-Resume2 .section-title {
+  color: #4a90e2;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Template 3: 70/30 Split - Based on Resume-3.png */
+.template-Resume3 .resume-content-wrapper {
+  display: grid;
+  grid-template-columns: 30% 70%;
+  gap: 0;
+  margin: -15mm;
+  min-height: 297mm;
+}
+.template-Resume3 .resume-header {
+  grid-column: 1 / span 2;
+  background-color: #34495e;
+  color: #fff;
+  padding: 10mm 15mm;
+  margin: 0;
+  text-align: left;
+}
+.template-Resume3 .resume-name { color: #fff; font-size: 26pt; }
+.template-Resume3 .resume-title { color: #3498db; font-size: 14pt; }
+.template-Resume3 .resume-summary { color: #ecf0f1; max-width: 80%; }
+.template-Resume3 .contact-info { 
+  color: #fff; 
+  border-top: 1px solid rgba(255,255,255,0.1); 
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+.template-Resume3 .resume-sections {
+  display: contents;
+}
+.template-Resume3 .resume-section[data-section="skills"],
+.template-Resume3 .resume-section[data-section="education"],
+.template-Resume3 .resume-section[data-section="languages"],
+.template-Resume3 .resume-section[data-section="certifications"],
+.template-Resume3 .resume-section[data-section="softSkills"] {
+  grid-column: 1;
+  background-color: #f8f9fa;
+  padding: 8mm 6mm;
+  margin: 0;
+}
+.template-Resume3 .resume-section[data-section="workExperience"],
+.template-Resume3 .resume-section[data-section="projects"] {
+  grid-column: 2;
+  padding: 8mm 10mm;
+  margin: 0;
+}
+.template-Resume3 .section-title {
+  font-size: 11pt;
+  color: #2c3e50;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 3px;
+  margin-bottom: 1rem;
+}
+
+/* Template 4: 80/20 Split - Professional */
+.template-Resume4 .resume-content-wrapper {
+  display: grid;
+  grid-template-columns: 75% 25%;
+  gap: 25px;
+}
+.template-Resume4 .resume-header {
+  grid-column: 1 / span 2;
+  border-bottom: 3px solid #333;
+}
+.template-Resume4 .resume-sections {
+  display: contents;
+}
+.template-Resume4 .resume-section[data-section="workExperience"],
+.template-Resume4 .resume-section[data-section="projects"],
+.template-Resume4 .resume-section[data-section="education"] {
+  grid-column: 1;
+}
+.template-Resume4 .resume-section[data-section="skills"],
+.template-Resume4 .resume-section[data-section="languages"],
+.template-Resume4 .resume-section[data-section="certifications"],
+.template-Resume4 .resume-section[data-section="softSkills"] {
+  grid-column: 2;
+}
+.template-Resume4 .section-title {
+  font-size: 12pt;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Template 5: Most Common Professional - Based on Resume-5.png */
+.template-Resume5 .resume-header {
+  text-align: center;
+  border-bottom: 2px solid #1a1a1a;
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+}
+.template-Resume5 .header-main {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.template-Resume5 .profile-image {
+  width: 90px;
+  height: 90px;
+}
+.template-Resume5 .resume-name {
+  font-size: 28pt;
+  letter-spacing: -1px;
+}
+.template-Resume5 .resume-title {
+  font-size: 14pt;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.template-Resume5 .contact-info {
+  justify-content: center;
+  border-top: none;
   font-size: 9pt;
-  margin-top: 0.8rem;
+  color: #333;
 }
-
-.contact-item {
-  display: flex;
-  gap: 0.3rem;
+.template-Resume5 .resume-content-wrapper {
+  display: grid;
+  grid-template-columns: 65% 35%;
+  gap: 30px;
 }
-
-.contact-label {
-  font-weight: 600;
+.template-Resume5 .resume-sections {
+  display: contents;
 }
-
-/* Section Styles */
-.resume-section {
+.template-Resume5 .resume-section[data-section="workExperience"],
+.template-Resume5 .resume-section[data-section="projects"] {
+  grid-column: 1;
+}
+.template-Resume5 .resume-section[data-section="skills"],
+.template-Resume5 .resume-section[data-section="education"],
+.template-Resume5 .resume-section[data-section="languages"],
+.template-Resume5 .resume-section[data-section="certifications"],
+.template-Resume5 .resume-section[data-section="softSkills"] {
+  grid-column: 2;
+}
+.template-Resume5 .section-title {
+  background-color: #f2f2f2;
+  padding: 5px 10px;
+  font-size: 12pt;
+  border-left: 5px solid #1a1a1a;
+  border-bottom: none;
+}
+.template-Resume5 .resume-summary {
+  grid-column: 1 / span 2;
   margin-bottom: 1.5rem;
-  page-break-inside: avoid;
+  font-style: italic;
+  font-size: 10pt;
+  border-left: 3px solid #ccc;
+  padding-left: 15px;
 }
 
 .section-title {
-  font-size: 14pt;
-  font-weight: bold;
-  margin: 0 0 0.8rem 0;
-  padding-bottom: 0.3rem;
-  border-bottom: 1.5px solid #333;
-  color: #000;
+  font-size: 13pt;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 /* Work Experience */
@@ -304,4 +466,3 @@
     box-shadow: none;
   }
 }
-
