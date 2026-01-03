@@ -42,10 +42,14 @@ function ResumeForm({ resumeData, updateResumeData, sectionOrder = [], enabledSe
     const Component = sectionComponents[sectionKey]
     if (!Component) return null
 
+    // Provide default data based on section type to prevent crashes
+    const defaultData = sectionKey === 'personalInfo' ? {} : []
+    const sectionData = resumeData[sectionKey] || defaultData
+
     return (
       <Component
         key={sectionKey}
-        data={resumeData[sectionKey]}
+        data={sectionData}
         updateData={(data) => updateResumeData(sectionKey, data)}
       />
     )

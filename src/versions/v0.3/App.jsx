@@ -3,8 +3,7 @@ import ResumeForm from '../../components/ResumeForm'
 import ResumePreview from '../../components/ResumePreview'
 import SectionManager from '../../components/SectionManager'
 import '../../App.css'
-import { availableSections, initialResumeData, initialSectionOrder } from '../../Config-Data/Resume-1'
-import { handleResumeParsed } from '../../Helpers/DataParser'
+import { handleResumeParsed } from '../../utils/DataParser'
 import AIResumeModal from '../../components/AIResumeModal'
 import MainHeader from './Main-Header'
 import JsonEditor from '../../components/JsonEditor'
@@ -12,19 +11,38 @@ import JsonEditor from '../../components/JsonEditor'
 import {allResumeTemplates } from '../../Config-Data'
 import TemplateSelector from './TemplateSelector'
 
-// Version 0.2 - Earlier version
+// Version 0.3
 function App() {
-  const [resumeData, setResumeData] = useState(initialResumeData)
-  const [sectionOrder, setSectionOrder] = useState(initialSectionOrder)
-  const [sections, setSections] = useState(availableSections)
+  const [resumeData, setResumeData] = useState({
+    personalInfo: {
+      name: '',
+      title: '',
+      summary: '',
+      phone: '',
+      email: '',
+      location: '',
+      github: '',
+      linkedin: '',
+      portfolio: '',
+      profileImage: ''
+    },
+    workExperience: [],
+    projects: [],
+    education: [],
+    skills: [],
+    certifications: [],
+    softSkills: [],
+    languages: []
+  })
+  const [sectionOrder, setSectionOrder] = useState([])
+  const [sections, setSections] = useState([])
   const [selectedResume, setSelectedResume] = useState(null)
   const [activeTab, setActiveTab] = useState('form')
-  const [enabledSections, setEnabledSections] = useState(
-    initialSectionOrder.reduce((acc, key) => ({ ...acc, [key]: true }), {})
-  )
+  const [enabledSections, setEnabledSections] = useState({})
   const [customSections, setCustomSections] = useState({})
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [viewMode, setViewMode] = useState('both') // 'both', 'json', 'form'
+  const [hasData, setHasData] = useState(false)
 
   const handleSelectTemplate = (templateKey) => {
     const template = allResumeTemplates[templateKey];
@@ -134,10 +152,13 @@ function App() {
           </button>
         </div>
         <div className="tab-buttons">
-          {selectedResume ? <>
+          {(selectedResume || hasData) ? <>
             <button
               className="btn btn-secondary"
-              onClick={() => setSelectedResume(null)}
+              onClick={() => {
+                setSelectedResume(null)
+                setHasData(false)
+              }}
               style={{ marginRight: '1rem' }}
             >
               Change Template
@@ -159,7 +180,7 @@ function App() {
       </div>
 
       <div className="app-content">
-        {selectedResume ? <>
+        {(selectedResume || hasData) ? <>
           {activeTab === 'form' ? (
           <>
             <div className="view-controls">
@@ -232,15 +253,18 @@ function App() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onResumeParsed={(parsedData) => {
-          if (!selectedResume) {
-            // Default to Resume 1 if no template selected
-            const template = allResumeTemplates['Resume1'];
-            setSectionOrder(template.order);
-            setSections(template.sections);
-            setEnabledSections(template.order.reduce((acc, key) => ({ ...acc, [key]: true }), {}));
-            setSelectedResume('Resume1');
-          }
-          handleResumeParsed({ parsedData, setResumeData, setActiveTab, setIsModalOpen });
+          handleResumeParsed({ 
+            parsedData, 
+            setResumeData, 
+            setActiveTab, 
+            setIsModalOpen,
+            setEnabledSections,
+            setSectionOrder,
+            setSections,
+            setSelectedResume,
+            currentSelectedResume: selectedResume,
+            setHasData
+          });
         }}
       />
     </div>

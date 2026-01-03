@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react'
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import './AIResumeModal.css'
 
-function AIResumeModal({ isOpen, onClose, onResumeParsed, setResumeData, setActiveTab, setIsModalOpen}) {
+function AIResumeModal({ isOpen, onClose, onResumeParsed }) {
   const [file, setFile] = useState(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState('')
@@ -13,66 +13,46 @@ function AIResumeModal({ isOpen, onClose, onResumeParsed, setResumeData, setActi
     const selectedFile = e.target.files[0]
     if (!selectedFile) return
 
-    // Validate file type
-    const isImage = selectedFile.type.startsWith('image/')
-    const isPDF = selectedFile.type === 'application/pdf'
-
-    if (!isImage && !isPDF) {
-      setError('Please upload a PDF or image file (JPG, PNG, etc.)')
+    if (selectedFile.type !== 'application/pdf') {
+      setError('Please upload a PDF file')
       return
     }
 
     setFile(selectedFile)
     setError('')
 
-    // Create preview for images
-    if (isImage) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPreview(reader.result)
+    try {
+      const pdfjsLib = await import('pdfjs-dist')
+      if (typeof window !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
       }
-      reader.readAsDataURL(selectedFile)
-    } else if (isPDF) {
-      // Create preview for PDF by rendering first page
-      try {
-        const pdfjsLib = await import('pdfjs-dist')
-        if (typeof window !== 'undefined') {
-          pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
-        }
 
-        const arrayBuffer = await selectedFile.arrayBuffer()
-        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer })
-        const pdf = await loadingTask.promise
-        const page = await pdf.getPage(1)
-        
-        const viewport = page.getViewport({ scale: 1.5 })
-        const canvas = document.createElement('canvas')
-        const context = canvas.getContext('2d')
-        canvas.height = viewport.height
-        canvas.width = viewport.width
+      const arrayBuffer = await selectedFile.arrayBuffer()
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer })
+      const pdf = await loadingTask.promise
+      const page = await pdf.getPage(1)
+      
+      const viewport = page.getViewport({ scale: 2.5 })
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d')
+      canvas.height = viewport.height
+      canvas.width = viewport.width
 
-        await page.render({
-          canvasContext: context,
-          viewport: viewport
-        }).promise
+      await page.render({
+        canvasContext: context,
+        viewport: viewport
+      }).promise
 
-        setPreview(canvas.toDataURL('image/png'))
-      } catch (err) {
-        console.error('Error creating PDF preview:', err)
-        // If preview fails, just show file name
-        setPreview(null)
-      }
-    } else {
+      setPreview(canvas.toDataURL('image/png'))
+    } catch (err) {
+      console.error('Error creating PDF preview:', err)
       setPreview(null)
     }
   }
 
   const extractTextFromPDF = async (file) => {
     try {
-      // Dynamically import pdfjs-dist
       const pdfjsLib = await import('pdfjs-dist')
-      
-      // Set worker source using Vite's ?url import - this is the proper way for Vite
       if (typeof window !== 'undefined') {
         pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
       }
@@ -82,11 +62,59 @@ function AIResumeModal({ isOpen, onClose, onResumeParsed, setResumeData, setActi
       const pdf = await loadingTask.promise
 
       let fullText = ''
+      let textLayerFound = false
+
+      // Try standard text layer extraction first
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i)
         const textContent = await page.getTextContent()
-        const pageText = textContent.items.map(item => item.str).join(' ')
-        fullText += pageText + '\n'
+        
+        if (textContent.items.length > 0) {
+          textLayerFound = true
+          const items = textContent.items.sort((a, b) => {
+            if (Math.abs(a.transform[5] - b.transform[5]) < 5) {
+              return a.transform[4] - b.transform[4]
+            }
+            return b.transform[5] - a.transform[5]
+          })
+
+          let lastY = -1
+          let pageText = ''
+          for (const item of items) {
+            if (lastY !== -1 && Math.abs(item.transform[5] - lastY) > 5) {
+              pageText += '\n'
+            }
+            pageText += item.str + ' '
+            lastY = item.transform[5]
+          }
+          fullText += pageText + '\n\n'
+        }
+      }
+
+      // Fallback to OCR if no text layer found or text is very sparse
+      if (!textLayerFound || fullText.trim().length < 50) {
+        console.log('No text layer found or sparse text. Starting OCR fallback...')
+        const { createWorker } = await import('tesseract.js')
+        const worker = await createWorker('eng')
+        
+        fullText = '' // Reset and use OCR text
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i)
+          const viewport = page.getViewport({ scale: 2.0 }) // High scale for better OCR
+          const canvas = document.createElement('canvas')
+          const context = canvas.getContext('2d')
+          canvas.height = viewport.height
+          canvas.width = viewport.width
+
+          await page.render({
+            canvasContext: context,
+            viewport: viewport
+          }).promise
+
+          const { data: { text } } = await worker.recognize(canvas)
+          fullText += text + '\n\n'
+        }
+        await worker.terminate()
       }
 
       return fullText
@@ -95,24 +123,9 @@ function AIResumeModal({ isOpen, onClose, onResumeParsed, setResumeData, setActi
     }
   }
 
-  const extractTextFromImage = async (file) => {
-    try {
-      // Dynamically import Tesseract
-      const { createWorker } = await import('tesseract.js')
-      
-      const worker = await createWorker('eng')
-      const { data: { text } } = await worker.recognize(file)
-      await worker.terminate()
-
-      return text
-    } catch (err) {
-      throw new Error(`Failed to extract text from image: ${err.message}`)
-    }
-  }
-
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a file first')
+      setError('Please select a PDF file first')
       return
     }
 
@@ -120,33 +133,16 @@ function AIResumeModal({ isOpen, onClose, onResumeParsed, setResumeData, setActi
     setError('')
 
     try {
-      let extractedText = ''
-
-      // Determine file type and extract text
-      if (file.type === 'application/pdf') {
-        extractedText = await extractTextFromPDF(file)
-      } else if (file.type.startsWith('image/')) {
-        extractedText = await extractTextFromImage(file)
-      } else {
-        throw new Error('Unsupported file type')
-      }
+      const extractedText = await extractTextFromPDF(file)
 
       if (!extractedText || extractedText.trim().length === 0) {
-        throw new Error('No text could be extracted from the file. Please ensure the file is clear and readable.')
+        throw new Error('No text could be extracted. The PDF might be an image with unreadable text.')
       }
 
-      // Parse the extracted text into structured resume data
       const { parseResumeText } = await import('../utils/resumeParser')
       const parsedResume = parseResumeText(extractedText)
 
-      // Debug: Log extracted text and parsed data
-      console.log('Extracted Text:', extractedText.substring(0, 500))
-      console.log('Parsed Resume Data:', parsedResume)
-
-      // Call the callback with parsed data
-      onResumeParsed({parsedData: parsedResume, setResumeData, setActiveTab, setIsModalOpen})
-      
-      // Close modal and reset
+      onResumeParsed(parsedResume)
       handleClose()
       
     } catch (err) {
@@ -179,19 +175,19 @@ function AIResumeModal({ isOpen, onClose, onResumeParsed, setResumeData, setActi
 
         <div className="ai-resume-modal-body">
           <p className="modal-description">
-            Upload your resume as a PDF or image. We'll extract the information and populate the form for you to edit.
+            Upload your resume PDF. If your PDF is a scan, we'll use OCR to extract the information.
           </p>
 
           <div className="file-upload-area">
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.gif"
+              accept=".pdf"
               onChange={handleFileSelect}
               className="file-input"
               id="resume-upload"
             />
-            <label htmlFor="resume-upload" className="file-upload-label">
+            <label htmlFor="resume-upload" className={`file-upload-label ${file ? 'has-file' : ''}`}>
               <div className="upload-icon">📄</div>
               <div>
                 {file ? (
@@ -199,7 +195,7 @@ function AIResumeModal({ isOpen, onClose, onResumeParsed, setResumeData, setActi
                 ) : (
                   <>
                     <span className="upload-text">Click to upload or drag and drop</span>
-                    <span className="upload-hint">PDF, JPG, PNG (Max 10MB)</span>
+                    <span className="upload-hint">PDF files only (Max 10MB)</span>
                   </>
                 )}
               </div>
@@ -212,34 +208,22 @@ function AIResumeModal({ isOpen, onClose, onResumeParsed, setResumeData, setActi
             </div>
           )}
 
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
+          {error && <div className="error-message">{error}</div>}
 
           {isProcessing && (
             <div className="processing-indicator">
               <div className="spinner"></div>
-              <p>Processing your resume... This may take a moment.</p>
+              <p>Processing your resume... This may take a moment (OCR Fallback enabled).</p>
             </div>
           )}
         </div>
 
         <div className="ai-resume-modal-footer">
-          <button 
-            className="btn btn-secondary" 
-            onClick={handleClose}
-            disabled={isProcessing}
-          >
+          <button className="btn btn-secondary" onClick={handleClose} disabled={isProcessing}>
             Cancel
           </button>
-          <button 
-            className="btn btn-primary" 
-            onClick={handleProcess}
-            disabled={!file || isProcessing}
-          >
-            {isProcessing ? 'Processing...' : 'Extract & Parse Resume'}
+          <button className="btn btn-primary" onClick={handleProcess} disabled={!file || isProcessing}>
+            {isProcessing ? 'Extracting...' : 'Extract & Parse Resume'}
           </button>
         </div>
       </div>
@@ -248,4 +232,3 @@ function AIResumeModal({ isOpen, onClose, onResumeParsed, setResumeData, setActi
 }
 
 export default AIResumeModal
-
