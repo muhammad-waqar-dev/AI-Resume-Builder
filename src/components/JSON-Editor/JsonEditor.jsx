@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './JsonEditor.css';
+import JsonTreeNode from './JsonTreeNode';
 
 function JsonEditor({ data, onChange }) {
   const [jsonText, setJsonText] = useState(JSON.stringify(data, null, 2));
   const [error, setError] = useState(null);
+  const [viewMode, setViewMode] = useState('tree'); // 'text' or 'tree'
 
   useEffect(() => {
     // Only update if the parsed data is different to avoid cursor jump
@@ -42,18 +44,40 @@ function JsonEditor({ data, onChange }) {
   return (
     <div className="json-editor-container">
       <div className="json-editor-header">
-        <h3>JSON Editor</h3>
+        <div className="header-left">
+          <h3>JSON Editor</h3>
+          <div className="view-toggle">
+            <button 
+              className={`btn btn-xs ${viewMode === 'tree' ? 'active' : ''}`}
+              onClick={() => setViewMode('tree')}
+            >
+              Tree
+            </button>
+            <button 
+              className={`btn btn-xs ${viewMode === 'text' ? 'active' : ''}`}
+              onClick={() => setViewMode('text')}
+            >
+              Code
+            </button>
+          </div>
+        </div>
         <button className="btn btn-sm btn-secondary" onClick={formatJson}>
           Format JSON
         </button>
       </div>
       <div className="json-editor-content">
-        <textarea
-          className={`json-textarea ${error ? 'has-error' : ''}`}
-          value={jsonText}
-          onChange={handleTextChange}
-          spellCheck="false"
-        />
+        {viewMode === 'text' ? (
+          <textarea
+            className={`json-textarea ${error ? 'has-error' : ''}`}
+            value={jsonText}
+            onChange={handleTextChange}
+            spellCheck="false"
+          />
+        ) : (
+          <div className="json-tree-view">
+            <JsonTreeNode value={data} />
+          </div>
+        )}
         {error && <div className="json-error-msg">{error}</div>}
       </div>
     </div>
