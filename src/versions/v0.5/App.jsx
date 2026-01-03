@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import ResumeForm from '../../components/ResumeForm'
-import ResumePreview from '../../components/ResumePreview'
-import SectionManager from '../../components/SectionManager'
-import VersionSelector from '../../components/VersionSelector'
+import ResumeForm from '../../components/ResumeForm/ResumeForm'
+import ResumePreview from '../../components/ResumePreview/ResumePreview'
+import SectionManager from '../../components/SectionManager/SectionManager'
+import MainHeader from '../../components/MainHeader/MainHeader'
 import '../../App.css'
 import { availableSections, initialResumeData, initialSectionOrder } from '../../Config-Data/Resume-1'
 
@@ -105,23 +105,7 @@ function App() {
 
   return (
     <div className="app">
-      <div className="app-header">
-        <div className="header-left">
-          <VersionSelector />
-          <h1>AI Resume Builder</h1>
-        </div>
-        <div className="header-right">
-          <a 
-            href="https://www.linkedin.com/in/muhammad-waqar-dev/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="linkedin-heart"
-            title="Visit my LinkedIn profile"
-          >
-            ❤️
-          </a>
-        </div>
-      </div>
+      <MainHeader />
       
       <div className="tab-header">
         <div className="tab-buttons">

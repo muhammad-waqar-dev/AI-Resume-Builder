@@ -21,6 +21,31 @@
   background-color: #357abd;
 }
 
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-primary.loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .preview-actions {
   margin-bottom: 2rem;
   width: 100%;
@@ -39,7 +64,8 @@
 .resume-page {
   width: 210mm;
   min-height: 297mm;
-  padding: 15mm;
+  padding: 20mm;
+  padding-bottom: 25mm; /* Extra bottom padding for multi-page safety */
   background-color: #fff;
   color: #333;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -47,7 +73,12 @@
   line-height: 1.5;
   position: relative;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: visible;
+}
+
+.resume-page * {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .resume-content-wrapper {
@@ -251,10 +282,16 @@
 .template-Resume5 .header-main {
   flex-direction: column;
   gap: 0.5rem;
+  align-items: center;
+  text-align: center;
+}
+.template-Resume5 .header-info {
+  text-align: center;
 }
 .template-Resume5 .profile-image {
   width: 90px;
   height: 90px;
+  margin: 0 auto;
 }
 .template-Resume5 .resume-name {
   font-size: 28pt;

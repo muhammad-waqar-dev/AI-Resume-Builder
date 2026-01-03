@@ -139,7 +139,7 @@ function AIResumeModal({ isOpen, onClose, onResumeParsed }) {
         throw new Error('No text could be extracted. The PDF might be an image with unreadable text.')
       }
 
-      const { parseResumeText } = await import('../utils/resumeParser')
+      const { parseResumeText } = await import('../../utils/resumeParser')
       const parsedResume = parseResumeText(extractedText)
 
       onResumeParsed(parsedResume)

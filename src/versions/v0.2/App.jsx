@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
-import ResumeForm from '../../components/ResumeForm'
-import ResumePreview from '../../components/ResumePreview'
-import SectionManager from '../../components/SectionManager'
+import ResumeForm from '../../components/ResumeForm/ResumeForm'
+import ResumePreview from '../../components/ResumePreview/ResumePreview'
+import SectionManager from '../../components/SectionManager/SectionManager'
 import '../../App.css'
 import { availableSections, initialResumeData, initialSectionOrder } from '../../Config-Data/Resume-1'
-import MainHeader from './Main-Header'
-import JsonEditor from '../../components/JsonEditor'
+import MainHeader from '../../components/MainHeader/MainHeader'
+import JsonEditor from '../../components/JSON-Editor/JsonEditor'
 
 import {allResumeTemplates } from '../../Config-Data'
-import TemplateSelector from './TemplateSelector'
+import TemplateSelector from '../../components/TemplateSelector/TemplateSelector'
 
 // Version 0.2 - Earlier version
 function App() {
@@ -121,7 +121,7 @@ function App() {
     <div className="app version-0-2">
       <MainHeader />
 
-      <div className="tab-header tab-header-split">
+      <div className="tab-header">
         <div className="tab-buttons">
           {selectedResume ? <>
             <button

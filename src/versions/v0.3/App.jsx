@@ -1,15 +1,15 @@
 import React, { useState } from 'react'
-import ResumeForm from '../../components/ResumeForm'
-import ResumePreview from '../../components/ResumePreview'
-import SectionManager from '../../components/SectionManager'
+import ResumeForm from '../../components/ResumeForm/ResumeForm'
+import ResumePreview from '../../components/ResumePreview/ResumePreview'
+import SectionManager from '../../components/SectionManager/SectionManager'
 import '../../App.css'
 import { handleResumeParsed } from '../../utils/DataParser'
-import AIResumeModal from '../../components/AIResumeModal'
-import MainHeader from './Main-Header'
-import JsonEditor from '../../components/JsonEditor'
+import AIResumeModal from '../../components/AIResumeModal/AIResumeModal'
+import MainHeader from '../../components/MainHeader/MainHeader'
+import JsonEditor from '../../components/JSON-Editor/JsonEditor'
 
 import {allResumeTemplates } from '../../Config-Data'
-import TemplateSelector from './TemplateSelector'
+import TemplateSelector from '../../components/TemplateSelector/TemplateSelector'
 
 // Version 0.3
 function App() {

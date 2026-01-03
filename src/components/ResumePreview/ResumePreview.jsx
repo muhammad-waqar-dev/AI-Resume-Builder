@@ -1,10 +1,11 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import './ResumePreview.css'
 
 function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, customSections = {}, templateId = null }) {
   const resumeRef = useRef()
+  const [isDownloading, setIsDownloading] = useState(false)
 
   // Helper to check if a section should be rendered based on enabled state
   const shouldRenderSection = (sectionKey) => {
@@ -224,100 +225,171 @@ function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, cu
   }
 
   const handleDownloadPDF = async () => {
-    const element = resumeRef.current
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight
-    })
-    
-    const imgData = canvas.toDataURL('image/png')
-    const pdf = new jsPDF('p', 'mm', 'a4')
-    const imgWidth = 210
-    const pageHeight = 297
-    const imgHeight = (canvas.height * imgWidth) / canvas.width
-    let heightLeft = imgHeight
+    try {
+      setIsDownloading(true)
+      const element = resumeRef.current
+      
+      // Use a fixed width for capture to ensure consistency regardless of screen size
+      const captureWidth = 794 // 210mm at 96 DPI
+      
+      const canvas = await html2canvas(element, {
+        scale: 3, // High scale for crisp PDF
+        useCORS: true,
+        logging: false,
+        width: captureWidth,
+        windowWidth: captureWidth,
+      })
+      
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      const pdfWidth = 210
+      const pdfHeight = 297
+      
+      const marginX = 10 // Side margins
+      const contentWidthMm = pdfWidth - (2 * marginX)
+      
+      // Safe Zones (Padding/Margins) in mm
+      const footerPadding = 15        // Padding at bottom of EVERY page
+      const headerPaddingSubsequent = 15 // Padding at top of page 2 onwards
+      const firstPageTopMargin = 5    // Minimal padding at top of page 1
+      
+      // Conversion factor from mm to Canvas Pixels
+      const pxPerMm = canvas.width / contentWidthMm;
 
-    let position = 0
+      // Calculate heights for slicing in pixels
+      const firstPageMaxHeightPx = (pdfHeight - firstPageTopMargin - footerPadding) * pxPerMm;
+      const subsequentPageMaxHeightPx = (pdfHeight - headerPaddingSubsequent - footerPadding) * pxPerMm;
 
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-    heightLeft -= pageHeight
+      let yOffsetPx = 0;
+      let pageNumber = 1;
 
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight
-      pdf.addPage()
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-      heightLeft -= pageHeight
+      while (yOffsetPx < canvas.height) {
+        if (pageNumber > 1) pdf.addPage();
+
+        // Determine how much of the canvas to take for this page
+        const sliceHeightPx = pageNumber === 1 ? firstPageMaxHeightPx : subsequentPageMaxHeightPx;
+        const actualSliceHeightPx = Math.min(sliceHeightPx, canvas.height - yOffsetPx);
+
+        // Create a temporary canvas for the slice to prevent bleed
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = actualSliceHeightPx;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        // Draw the specific portion of the main canvas onto the slice
+        tempCtx.drawImage(
+          canvas,
+          0, yOffsetPx, canvas.width, actualSliceHeightPx, // Source coordinates
+          0, 0, canvas.width, actualSliceHeightPx          // Destination coordinates
+        );
+
+        // Convert slice to image and add to PDF
+        const pageImgData = tempCanvas.toDataURL('image/png');
+        const contentHeightMm = actualSliceHeightPx / pxPerMm;
+        const topMarginMm = pageNumber === 1 ? firstPageTopMargin : headerPaddingSubsequent;
+
+        pdf.addImage(
+          pageImgData, 
+          'PNG', 
+          marginX, 
+          topMarginMm, 
+          contentWidthMm, 
+          contentHeightMm,
+          undefined, 
+          'FAST'
+        );
+
+        yOffsetPx += actualSliceHeightPx;
+        pageNumber++;
+      }
+
+      pdf.save(`${(resumeData.personalInfo && resumeData.personalInfo.name) || 'resume'}-resume.pdf`)
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      alert('Failed to generate PDF. Please try again.')
+    } finally {
+      setIsDownloading(false)
     }
-
-    pdf.save(`${resumeData.personalInfo.name || 'resume'}-resume.pdf`)
   }
+
+  const personalInfo = resumeData.personalInfo || {}
 
   return (
     <div className="resume-preview-container">
       <div className="preview-actions">
-        <button className="btn btn-primary" onClick={handleDownloadPDF}>
-          Download as PDF
+        <button 
+          className={`btn btn-primary ${isDownloading ? 'loading' : ''}`} 
+          onClick={handleDownloadPDF}
+          disabled={isDownloading}
+        >
+          {isDownloading ? (
+            <>
+              <span className="spinner"></span>
+              Generating PDF...
+            </>
+          ) : (
+            'Download as PDF'
+          )}
         </button>
       </div>
       
-      <div className="resume-preview" ref={resumeRef}>
-        <div className={`resume-page ${templateId ? `template-${templateId}` : 'template-standard'}`}>
+      <div className="resume-preview">
+        <div 
+          className={`resume-page ${templateId ? `template-${templateId}` : 'template-standard'}`}
+          ref={resumeRef}
+        >
           <div className="resume-content-wrapper">
             {/* Header Section */}
             <header className="resume-header">
               <div className="header-main">
-                {resumeData.personalInfo.profileImage && (
+                {personalInfo.profileImage && (
                   <div className="profile-image">
-                    <img src={resumeData.personalInfo.profileImage} alt="Profile" />
+                    <img src={personalInfo.profileImage} alt="Profile" />
                   </div>
                 )}
                 <div className="header-info">
-                  <h1 className="resume-name">{resumeData.personalInfo.name || 'Your Name'}</h1>
-                  <h2 className="resume-title">{resumeData.personalInfo.title || 'Your Title'}</h2>
-                  {resumeData.personalInfo.summary && (
-                    <p className="resume-summary">{resumeData.personalInfo.summary}</p>
+                  <h1 className="resume-name">{personalInfo.name || 'Your Name'}</h1>
+                  <h2 className="resume-title">{personalInfo.title || 'Your Title'}</h2>
+                  {personalInfo.summary && (
+                    <p className="resume-summary">{personalInfo.summary}</p>
                   )}
                 </div>
               </div>
               
               <div className="contact-info">
-                {resumeData.personalInfo.phone && (
+                {personalInfo.phone && (
                   <div className="contact-item">
                     <span className="contact-label">Phone:</span>
-                    <span>{resumeData.personalInfo.phone}</span>
+                    <span>{personalInfo.phone}</span>
                   </div>
                 )}
-                {resumeData.personalInfo.email && (
+                {personalInfo.email && (
                   <div className="contact-item">
                     <span className="contact-label">Email:</span>
-                    <span>{resumeData.personalInfo.email}</span>
+                    <span>{personalInfo.email}</span>
                   </div>
                 )}
-                {resumeData.personalInfo.location && (
+                {personalInfo.location && (
                   <div className="contact-item">
                     <span className="contact-label">Location:</span>
-                    <span>{resumeData.personalInfo.location}</span>
+                    <span>{personalInfo.location}</span>
                   </div>
                 )}
-                {resumeData.personalInfo.github && (
+                {personalInfo.github && (
                   <div className="contact-item">
                     <span className="contact-label">GitHub:</span>
-                    <span>{resumeData.personalInfo.github}</span>
+                    <span>{personalInfo.github}</span>
                   </div>
                 )}
-                {resumeData.personalInfo.linkedin && (
+                {personalInfo.linkedin && (
                   <div className="contact-item">
                     <span className="contact-label">LinkedIn:</span>
-                    <span>{resumeData.personalInfo.linkedin}</span>
+                    <span>{personalInfo.linkedin}</span>
                   </div>
                 )}
-                {resumeData.personalInfo.portfolio && (
+                {personalInfo.portfolio && (
                   <div className="contact-item">
                     <span className="contact-label">Portfolio:</span>
-                    <span>{resumeData.personalInfo.portfolio}</span>
+                    <span>{personalInfo.portfolio}</span>
                   </div>
                 )}
               </div>

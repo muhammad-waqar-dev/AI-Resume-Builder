@@ -1,4 +1,4 @@
-import VersionSelector from "../../components/VersionSelector"
+import VersionSelector from "../VersionSelector/VersionSelector"
 
 function MainHeader() {
     return (
