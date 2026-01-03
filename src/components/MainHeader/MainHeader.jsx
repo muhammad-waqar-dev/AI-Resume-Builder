@@ -9,7 +9,7 @@ function MainHeader() {
         </div>
         <div className="header-right">
           <a 
-            href="https://www.linkedin.com/in/muhammad-waqar-dev/" 
+            href="https://www.linkedin.com/in/jhon-dev/" 
             target="_blank" 
             rel="noopener noreferrer"
             className="linkedin-heart"

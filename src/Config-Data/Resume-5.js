@@ -1,14 +1,14 @@
 export const initialResumeData = {
   personalInfo: {
-    name: 'Muhammad Waqar',
+    name: 'Jhon Dev',
     title: 'Senior Frontend Developer',
     summary:
       'A motivated computer engineer and senior frontend developer with 6+ years of experience, willing to explore opportunities and learn new technologies. An enthusiastic problem solver proficient in modern web technologies, with a focus on delivering seamless and efficient user experiences. Seeking to leverage skills in a dynamic team environment to drive forward-looking web solutions.',
-    phone: '',
-    email: 'muhammad.waqar.dev@gmail.com',
+    phone: '+91-9999999999',
+    email: 'jhon.dev@gmail.com',
     location: 'Karachi, Pakistan',
-    github: 'https://github.com/muhammad-waqar-dev',
-    linkedin: 'https://www.linkedin.com/in/muhammad-waqar-dev/',
+    github: 'https://github.com/jhon-dev',
+    linkedin: 'https://www.linkedin.com/in/jhon-dev/',
     portfolio: '',
     profileImage: ''
   },
@@ -109,7 +109,7 @@ export const initialResumeData = {
       institution: 'NED University, Karachi, Pakistan',
       degree: 'Master’s in Data Science',
       startDate: '2024',
-      endDate: '2026'
+      endDate: '2025'
     },
     {
       id: 2,
