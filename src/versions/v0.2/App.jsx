@@ -4,8 +4,6 @@ import ResumePreview from '../../components/ResumePreview'
 import SectionManager from '../../components/SectionManager'
 import '../../App.css'
 import { availableSections, initialResumeData, initialSectionOrder } from '../../Config-Data/Resume-1'
-import { handleResumeParsed } from '../../Helpers/DataParser'
-import AIResumeModal from '../../components/AIResumeModal'
 import MainHeader from './Main-Header'
 import JsonEditor from '../../components/JsonEditor'
 
@@ -23,7 +21,6 @@ function App() {
     initialSectionOrder.reduce((acc, key) => ({ ...acc, [key]: true }), {})
   )
   const [customSections, setCustomSections] = useState({})
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [viewMode, setViewMode] = useState('both') // 'both', 'json', 'form'
 
   const handleSelectTemplate = (templateKey) => {
@@ -125,14 +122,6 @@ function App() {
       <MainHeader />
 
       <div className="tab-header tab-header-split">
-        {/* <div className="tab-left">
-          <button
-            className="btn-ai-resume"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Custom AI Resume
-          </button>
-        </div> */}
         <div className="tab-buttons">
           {selectedResume ? <>
             <button
@@ -227,22 +216,6 @@ function App() {
         </> : <TemplateSelector onSelect={handleSelectTemplate} />
       }
       </div>
-
-      <AIResumeModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onResumeParsed={(parsedData) => {
-          if (!selectedResume) {
-            // Default to Resume 1 if no template selected
-            const template = allResumeTemplates['Resume1'];
-            setSectionOrder(template.order);
-            setSections(template.sections);
-            setEnabledSections(template.order.reduce((acc, key) => ({ ...acc, [key]: true }), {}));
-            setSelectedResume('Resume1');
-          }
-          handleResumeParsed({ parsedData, setResumeData, setActiveTab, setIsModalOpen });
-        }}
-      />
     </div>
   )
 }
