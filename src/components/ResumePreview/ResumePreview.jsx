@@ -6,6 +6,30 @@ import './ResumePreview.css'
 function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, customSections = {}, templateId = null }) {
   const resumeRef = useRef()
   const [isDownloading, setIsDownloading] = useState(false)
+  const [showStyles, setShowStyles] = useState(false)
+  
+  const DEFAULT_STYLES = {
+    fontSize: 10.5,
+    fontFamily: "'Inter', sans-serif",
+    marginTop: 20,
+    marginRight: 20,
+    marginBottom: 20,
+    marginLeft: 20,
+    paddingTop: 0,
+    paddingRight: 0,
+    paddingBottom: 0,
+    paddingLeft: 0,
+  }
+
+  const [styles, setStyles] = useState(DEFAULT_STYLES)
+
+  const handleStyleChange = (key, value) => {
+    setStyles(prev => ({ ...prev, [key]: value }))
+  }
+
+  const resetStyles = () => {
+    setStyles(DEFAULT_STYLES)
+  }
 
   // Helper to check if a section should be rendered based on enabled state
   const shouldRenderSection = (sectionKey) => {
@@ -244,13 +268,13 @@ function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, cu
       const pdfWidth = 210
       const pdfHeight = 297
       
-      const marginX = 10 // Side margins
-      const contentWidthMm = pdfWidth - (2 * marginX)
+      const marginX = styles.marginLeft // Use user's left margin
+      const contentWidthMm = pdfWidth - (styles.marginLeft + styles.marginRight)
       
-      // Safe Zones (Padding/Margins) in mm
-      const footerPadding = 15        // Padding at bottom of EVERY page
-      const headerPaddingSubsequent = 15 // Padding at top of page 2 onwards
-      const firstPageTopMargin = 5    // Minimal padding at top of page 1
+      // Safe Zones (Padding/Margins) in mm from user styles
+      const footerPadding = styles.marginBottom        
+      const headerPaddingSubsequent = styles.marginTop 
+      const firstPageTopMargin = styles.marginTop    
       
       // Conversion factor from mm to Canvas Pixels
       const pxPerMm = canvas.width / contentWidthMm;
@@ -316,26 +340,126 @@ function ResumePreview({ resumeData, sectionOrder = [], enabledSections = {}, cu
   return (
     <div className="resume-preview-container">
       <div className="preview-actions">
-        <button 
-          className={`btn btn-primary ${isDownloading ? 'loading' : ''}`} 
-          onClick={handleDownloadPDF}
-          disabled={isDownloading}
-        >
-          {isDownloading ? (
-            <>
-              <span className="spinner"></span>
-              Generating PDF...
-            </>
-          ) : (
-            'Download as PDF'
-          )}
-        </button>
+        <div className="action-buttons">
+          <button 
+            className={`btn btn-secondary ${showStyles ? 'active' : ''}`}
+            onClick={() => setShowStyles(!showStyles)}
+          >
+            {showStyles ? 'Hide Styles' : 'Customize Styles'}
+          </button>
+          <button 
+            className={`btn btn-primary ${isDownloading ? 'loading' : ''}`} 
+            onClick={handleDownloadPDF}
+            disabled={isDownloading}
+          >
+            {isDownloading ? (
+              <>
+                <span className="spinner"></span>
+                Generating PDF...
+              </>
+            ) : (
+              'Download as PDF'
+            )}
+          </button>
+        </div>
+
+        {showStyles && (
+          <div className="style-customizer-panel">
+            <div className="style-customizer-header">
+              <h4>Style Customization</h4>
+              <button className="btn btn-xs btn-outline" onClick={resetStyles}>Reset to Defaults</button>
+            </div>
+            
+            <div className="style-group">
+              <h4>Typography</h4>
+              <div className="style-row">
+                <div className="style-field">
+                  <label>Font Size ({styles.fontSize}pt)</label>
+                  <input 
+                    type="range" min="8" max="16" step="0.5" 
+                    value={styles.fontSize} 
+                    onChange={(e) => handleStyleChange('fontSize', parseFloat(e.target.value))} 
+                  />
+                </div>
+                <div className="style-field">
+                  <label>Font Family</label>
+                  <select 
+                    value={styles.fontFamily} 
+                    onChange={(e) => handleStyleChange('fontFamily', e.target.value)}
+                    style={{ fontFamily: styles.fontFamily }}
+                  >
+                    <option value="'Inter', sans-serif">Inter (Modern Sans)</option>
+                    <option value="'Poppins', sans-serif">Poppins (Clean)</option>
+                    <option value="'Roboto', sans-serif">Roboto (Professional)</option>
+                    <option value="'Open Sans', sans-serif">Open Sans</option>
+                    <option value="'Lato', sans-serif">Lato</option>
+                    <option value="Georgia, serif">Georgia (Classic Serif)</option>
+                    <option value="'Times New Roman', serif">Times New Roman</option>
+                    <option value="'Courier New', monospace">Courier New (Monospace)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="style-group">
+              <h4>Page Margins (mm)</h4>
+              <div className="style-grid">
+                <div className="style-field">
+                  <label>Top</label>
+                  <input type="number" value={styles.marginTop} onChange={(e) => handleStyleChange('marginTop', parseInt(e.target.value) || 0)} />
+                </div>
+                <div className="style-field">
+                  <label>Bottom</label>
+                  <input type="number" value={styles.marginBottom} onChange={(e) => handleStyleChange('marginBottom', parseInt(e.target.value) || 0)} />
+                </div>
+                <div className="style-field">
+                  <label>Left</label>
+                  <input type="number" value={styles.marginLeft} onChange={(e) => handleStyleChange('marginLeft', parseInt(e.target.value) || 0)} />
+                </div>
+                <div className="style-field">
+                  <label>Right</label>
+                  <input type="number" value={styles.marginRight} onChange={(e) => handleStyleChange('marginRight', parseInt(e.target.value) || 0)} />
+                </div>
+              </div>
+            </div>
+
+            <div className="style-group">
+              <h4>Content Padding (mm)</h4>
+              <div className="style-grid">
+                <div className="style-field">
+                  <label>Top</label>
+                  <input type="number" value={styles.paddingTop} onChange={(e) => handleStyleChange('paddingTop', parseInt(e.target.value) || 0)} />
+                </div>
+                <div className="style-field">
+                  <label>Bottom</label>
+                  <input type="number" value={styles.paddingBottom} onChange={(e) => handleStyleChange('paddingBottom', parseInt(e.target.value) || 0)} />
+                </div>
+                <div className="style-field">
+                  <label>Left</label>
+                  <input type="number" value={styles.paddingLeft} onChange={(e) => handleStyleChange('paddingLeft', parseInt(e.target.value) || 0)} />
+                </div>
+                <div className="style-field">
+                  <label>Right</label>
+                  <input type="number" value={styles.paddingRight} onChange={(e) => handleStyleChange('paddingRight', parseInt(e.target.value) || 0)} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       
       <div className="resume-preview">
         <div 
           className={`resume-page ${templateId ? `template-${templateId}` : 'template-standard'}`}
           ref={resumeRef}
+          style={{
+            fontSize: `${styles.fontSize}pt`,
+            fontFamily: styles.fontFamily,
+            paddingTop: `${styles.marginTop + styles.paddingTop}mm`,
+            paddingRight: `${styles.marginRight + styles.paddingRight}mm`,
+            paddingBottom: `${styles.marginBottom + styles.paddingBottom}mm`,
+            paddingLeft: `${styles.marginLeft + styles.paddingLeft}mm`,
+          }}
         >
           <div className="resume-content-wrapper">
             {/* Header Section */}

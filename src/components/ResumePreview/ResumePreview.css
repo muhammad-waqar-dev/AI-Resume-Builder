@@ -51,7 +51,139 @@
   width: 100%;
   max-width: 210mm;
   display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.action-buttons {
+  display: flex;
   justify-content: flex-end;
+  gap: 1rem;
+}
+
+.style-customizer-panel {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: slideDown 0.3s ease-out;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.style-customizer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.style-customizer-header h4 {
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #ddd !important;
+  color: #666 !important;
+}
+
+.btn-outline:hover {
+  background: #f5f5f5 !important;
+  border-color: #ccc !important;
+}
+
+.style-group h4 {
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 0.5rem;
+}
+
+.style-row {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.style-row .style-field {
+  flex: 1;
+}
+
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 1200px) {
+  .style-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .style-grid {
+    grid-template-columns: 1fr;
+  }
+  .style-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+.style-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.style-field label {
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.style-field input[type="number"],
+.style-field select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.style-field input[type="number"]:focus,
+.style-field select:focus {
+  border-color: #4a90e2;
+}
+
+.style-field input[type="range"] {
+  width: 100%;
+}
+
+.btn-secondary.active {
+  background-color: #eef2f7;
+  border-color: #4a90e2;
+  color: #4a90e2;
 }
 
 .resume-preview {
@@ -64,12 +196,9 @@
 .resume-page {
   width: 210mm;
   min-height: 297mm;
-  padding: 20mm;
-  padding-bottom: 25mm; /* Extra bottom padding for multi-page safety */
+  /* Padding is now controlled via inline styles in ResumePreview.jsx */
   background-color: #fff;
   color: #333;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 10.5pt;
   line-height: 1.5;
   position: relative;
   box-sizing: border-box;
